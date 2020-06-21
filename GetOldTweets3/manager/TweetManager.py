@@ -128,7 +128,7 @@ class TweetManager:
                     if tweetCriteria.maxTweets > 0 and batch_cnt_results >= tweetCriteria.maxTweets:
                         active = False
                         break
-                time.sleep(5)
+                time.sleep(2)
 
             if receiveBuffer and len(resultsAux) > 0:
                 receiveBuffer(resultsAux)
