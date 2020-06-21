@@ -37,6 +37,7 @@ class TweetManager:
         """
 
         tweetCounter = 0
+        timeoutCounter = 0
 
         results = []
         resultsAux = []
@@ -81,6 +82,7 @@ class TweetManager:
 
                 for tweetHTML in tweets:
                     tweetCounter += 1
+                    timeoutCounter += 1
                     print(tweetCounter)
                     tweetPQ = PyQuery(tweetHTML)
                     tweet = models.Tweet()
@@ -133,7 +135,10 @@ class TweetManager:
                     if tweetCriteria.maxTweets > 0 and batch_cnt_results >= tweetCriteria.maxTweets:
                         active = False
                         break
-                time.sleep(2 * random.random())
+                #time.sleep(2 * random.random())
+                if timeoutCounter > 10000:
+                    time.sleep(5 * 60)
+                    timeoutCounter = 0
 
             if receiveBuffer and len(resultsAux) > 0:
                 receiveBuffer(resultsAux)
