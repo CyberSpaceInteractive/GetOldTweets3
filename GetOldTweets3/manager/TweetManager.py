@@ -4,6 +4,7 @@ import json, re, datetime, sys, random, http.cookiejar
 import urllib.request, urllib.parse, urllib.error
 from pyquery import PyQuery
 from .. import models
+import time
 
 class TweetManager:
     """A class for accessing the Twitter's search engine"""
@@ -127,6 +128,7 @@ class TweetManager:
                     if tweetCriteria.maxTweets > 0 and batch_cnt_results >= tweetCriteria.maxTweets:
                         active = False
                         break
+                time.sleep(10)
 
             if receiveBuffer and len(resultsAux) > 0:
                 receiveBuffer(resultsAux)
