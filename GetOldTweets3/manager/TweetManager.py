@@ -148,8 +148,8 @@ class TweetManager:
                             active = False
                             break
                     #time.sleep(2 * random.random())
-                    if timeoutCounter > 10000:
-                        time.sleep(5 * 60)
+                    if timeoutCounter > 5000:
+                        time.sleep(3 * 60)
                         timeoutCounter = 0
 
                 if receiveBuffer and len(resultsAux) > 0:
