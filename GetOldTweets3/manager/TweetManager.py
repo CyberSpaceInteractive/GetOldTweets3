@@ -5,6 +5,7 @@ import urllib.request, urllib.parse, urllib.error
 from pyquery import PyQuery
 from .. import models
 import time
+import csv
 
 class TweetManager:
     """A class for accessing the Twitter's search engine"""
@@ -23,7 +24,7 @@ class TweetManager:
     ]
 
     @staticmethod
-    def getTweets(tweetCriteria, receiveBuffer=None, bufferLength=100, proxy=None, debug=False):
+    def getTweets(tweetCriteria, file_name, receiveBuffer=None, bufferLength=100, proxy=None, debug=False):
         """Get tweets that match the tweetCriteria parameter
         A static method.
 
@@ -58,91 +59,102 @@ class TweetManager:
         else:
             n_batches = 1
 
-        for batch in range(n_batches):  # process all_usernames by batches
-            refreshCursor = ''
-            batch_cnt_results = 0
+        
+        with open(file_name, mode='w', newline="") as tweets_file:
+            tweets_writer = csv.writer(tweets_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-            if all_usernames:  # a username in the criteria?
-                tweetCriteria.username = all_usernames[batch*usernames_per_batch:batch*usernames_per_batch+usernames_per_batch]
 
-            active = True
-            while active:
-                json = TweetManager.getJsonResponse(tweetCriteria, refreshCursor, cookieJar, proxy, user_agent, debug=debug)
-                if len(json['items_html'].strip()) == 0:
-                    break
+            for batch in range(n_batches):  # process all_usernames by batches
+                refreshCursor = ''
+                batch_cnt_results = 0
 
-                refreshCursor = json['min_position']
-                scrapedTweets = PyQuery(json['items_html'])
-                #Remove incomplete tweets withheld by Twitter Guidelines
-                scrapedTweets.remove('div.withheld-tweet')
-                tweets = scrapedTweets('div.js-stream-tweet')
+                if all_usernames:  # a username in the criteria?
+                    tweetCriteria.username = all_usernames[batch*usernames_per_batch:batch*usernames_per_batch+usernames_per_batch]
 
-                if len(tweets) == 0:
-                    break
+                
 
-                for tweetHTML in tweets:
-                    tweetCounter += 1
-                    timeoutCounter += 1
-                    print(tweetCounter)
-                    tweetPQ = PyQuery(tweetHTML)
-                    tweet = models.Tweet()
-
-                    usernames = tweetPQ("span.username.u-dir b").text().split()
-                    if not len(usernames):  # fix for issue #13
-                        continue
-
-                    tweet.username = usernames[0]
-                    tweet.to = usernames[1] if len(usernames) >= 2 else None  # take the first recipient if many
-                    rawtext = TweetManager.textify(tweetPQ("p.js-tweet-text").html(), tweetCriteria.emoji)
-                    tweet.text = re.sub(r"\s+", " ", rawtext)\
-                        .replace('# ', '#').replace('@ ', '@').replace('$ ', '$')
-                    tweet.retweets = int(tweetPQ("span.ProfileTweet-action--retweet span.ProfileTweet-actionCount").attr("data-tweet-stat-count").replace(",", ""))
-                    tweet.favorites = int(tweetPQ("span.ProfileTweet-action--favorite span.ProfileTweet-actionCount").attr("data-tweet-stat-count").replace(",", ""))
-                    tweet.replies = int(tweetPQ("span.ProfileTweet-action--reply span.ProfileTweet-actionCount").attr("data-tweet-stat-count").replace(",", ""))
-                    tweet.id = tweetPQ.attr("data-tweet-id")
-                    tweet.permalink = 'https://twitter.com' + tweetPQ.attr("data-permalink-path")
-                    tweet.author_id = int(tweetPQ("a.js-user-profile-link").attr("data-user-id"))
-
-                    dateSec = int(tweetPQ("small.time span.js-short-timestamp").attr("data-time"))
-                    tweet.date = datetime.datetime.fromtimestamp(dateSec, tz=datetime.timezone.utc)
-                    tweet.formatted_date = datetime.datetime.fromtimestamp(dateSec, tz=datetime.timezone.utc)\
-                                                            .strftime("%a %b %d %X +0000 %Y")
-                    tweet.hashtags, tweet.mentions = TweetManager.getHashtagsAndMentions(tweetPQ)
-
-                    geoSpan = tweetPQ('span.Tweet-geo')
-                    if len(geoSpan) > 0:
-                        tweet.geo = geoSpan.attr('title')
-                    else:
-                        tweet.geo = ''
-
-                    urls = []
-                    for link in tweetPQ("a"):
-                        try:
-                            urls.append((link.attrib["data-expanded-url"]))
-                        except KeyError:
-                            pass
-
-                    tweet.urls = ",".join(urls)
-
-                    results.append(tweet)
-                    resultsAux.append(tweet)
-                    
-                    if receiveBuffer and len(resultsAux) >= bufferLength:
-                        receiveBuffer(resultsAux)
-                        resultsAux = []
-
-                    batch_cnt_results += 1
-                    if tweetCriteria.maxTweets > 0 and batch_cnt_results >= tweetCriteria.maxTweets:
-                        active = False
+                active = True
+                while active:
+                    json = TweetManager.getJsonResponse(tweetCriteria, refreshCursor, cookieJar, proxy, user_agent, debug=debug)
+                    if len(json['items_html'].strip()) == 0:
                         break
-                #time.sleep(2 * random.random())
-                if timeoutCounter > 10000:
-                    time.sleep(5 * 60)
-                    timeoutCounter = 0
 
-            if receiveBuffer and len(resultsAux) > 0:
-                receiveBuffer(resultsAux)
-                resultsAux = []
+                    refreshCursor = json['min_position']
+                    scrapedTweets = PyQuery(json['items_html'])
+                    #Remove incomplete tweets withheld by Twitter Guidelines
+                    scrapedTweets.remove('div.withheld-tweet')
+                    tweets = scrapedTweets('div.js-stream-tweet')
+
+                    if len(tweets) == 0:
+                        break
+
+                    for tweetHTML in tweets:
+                        tweetCounter += 1
+                        timeoutCounter += 1
+                        print(tweetCounter)
+                        tweetPQ = PyQuery(tweetHTML)
+                        tweet = models.Tweet()
+
+                        usernames = tweetPQ("span.username.u-dir b").text().split()
+                        if not len(usernames):  # fix for issue #13
+                            continue
+
+                        tweet.username = usernames[0]
+                        tweet.to = usernames[1] if len(usernames) >= 2 else None  # take the first recipient if many
+                        rawtext = TweetManager.textify(tweetPQ("p.js-tweet-text").html(), tweetCriteria.emoji)
+                        tweet.text = re.sub(r"\s+", " ", rawtext)\
+                            .replace('# ', '#').replace('@ ', '@').replace('$ ', '$')
+                        tweet.retweets = int(tweetPQ("span.ProfileTweet-action--retweet span.ProfileTweet-actionCount").attr("data-tweet-stat-count").replace(",", ""))
+                        tweet.favorites = int(tweetPQ("span.ProfileTweet-action--favorite span.ProfileTweet-actionCount").attr("data-tweet-stat-count").replace(",", ""))
+                        tweet.replies = int(tweetPQ("span.ProfileTweet-action--reply span.ProfileTweet-actionCount").attr("data-tweet-stat-count").replace(",", ""))
+                        tweet.id = tweetPQ.attr("data-tweet-id")
+                        tweet.permalink = 'https://twitter.com' + tweetPQ.attr("data-permalink-path")
+                        tweet.author_id = int(tweetPQ("a.js-user-profile-link").attr("data-user-id"))
+
+                        dateSec = int(tweetPQ("small.time span.js-short-timestamp").attr("data-time"))
+                        tweet.date = datetime.datetime.fromtimestamp(dateSec, tz=datetime.timezone.utc)
+                        tweet.formatted_date = datetime.datetime.fromtimestamp(dateSec, tz=datetime.timezone.utc)\
+                                                                .strftime("%a %b %d %X +0000 %Y")
+                        tweet.hashtags, tweet.mentions = TweetManager.getHashtagsAndMentions(tweetPQ)
+
+                        geoSpan = tweetPQ('span.Tweet-geo')
+                        if len(geoSpan) > 0:
+                            tweet.geo = geoSpan.attr('title')
+                        else:
+                            tweet.geo = ''
+
+                        urls = []
+                        for link in tweetPQ("a"):
+                            try:
+                                urls.append((link.attrib["data-expanded-url"]))
+                            except KeyError:
+                                pass
+
+                        tweet.urls = ",".join(urls)
+
+                        results.append(tweet)
+                        resultsAux.append(tweet)
+
+                        tweet_list = []
+                        tweet_list = [tweet.id, tweet.permalink, tweet.username, tweet.to, tweet.text.encode("utf-8"), tweet.date, tweet.retweets, tweet.favorites, tweet.mentions, tweet.hashtags, tweet.geo]
+                        tweets_writer.writerow(tweet_list)
+                        
+                        if receiveBuffer and len(resultsAux) >= bufferLength:
+                            receiveBuffer(resultsAux)
+                            resultsAux = []
+
+                        batch_cnt_results += 1
+                        if tweetCriteria.maxTweets > 0 and batch_cnt_results >= tweetCriteria.maxTweets:
+                            active = False
+                            break
+                    #time.sleep(2 * random.random())
+                    if timeoutCounter > 10000:
+                        time.sleep(5 * 60)
+                        timeoutCounter = 0
+
+                if receiveBuffer and len(resultsAux) > 0:
+                    receiveBuffer(resultsAux)
+                    resultsAux = []
 
         return results
 
