@@ -92,7 +92,7 @@ class TweetManager:
                         tweetCounter += 1
                         timeoutCounter += 1
                         print(tweetCounter)
-                        
+
                         tweetPQ = PyQuery(tweetHTML)
                         tweet = models.Tweet()
 
@@ -376,26 +376,11 @@ class TweetManager:
             print(url)
             print('\n'.join(h[0]+': '+h[1] for h in headers))
 
-        try:
-            response = opener.open(url)
-            jsonResponse = response.read()
-        except Exception as e:
-            print("An error occured during an HTTP request:", str(e))
-            print("Try to open in browser: https://twitter.com/search?q=%s&src=typd" % urllib.parse.quote(urlGetData))
-            sys.exit()
-
-        try:
-            s_json = jsonResponse.decode()
-        except:
-            print("Invalid response from Twitter")
-            sys.exit()
-
-        try:
-            dataJson = json.loads(s_json)
-        except:
-            print("Error parsing JSON: %s" % s_json)
-            sys.exit()
-
+        response = opener.open(url)
+        jsonResponse = response.read()
+        s_json = jsonResponse.decode()
+        dataJson = json.loads(s_json)
+        
         if debug:
             print(s_json)
             print("---\n")
