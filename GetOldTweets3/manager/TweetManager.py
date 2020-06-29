@@ -10,11 +10,15 @@ import requests
 from bs4 import BeautifulSoup
 from random import choice
 
+proxy_list = ["176.221.43.250:3128", "174.138.46.114:3128", "167.172.133.225:3128", "64.227.1.89:3128", "51.158.29.47:5836"]
+
 def proxy_generator():
         response = requests.get("https://sslproxies.org/")
         soup = BeautifulSoup(response.content, 'html5lib')
-        proxy1 = choice(list(map(lambda x:x[0]+':'+x[1], list(zip(map(lambda x:x.text,  soup.findAll('td')[::8]), map(lambda x:x.text, soup.findAll('td')[1::8]))))))
+        #proxy1 = choice(list(map(lambda x:x[0]+':'+x[1], list(zip(map(lambda x:x.text,  soup.findAll('td')[::8]), map(lambda x:x.text, soup.findAll('td')[1::8]))))))
+        proxy1 = choice(proxy_list)
         return proxy1
+
 
 
 class TweetManager:
