@@ -6,6 +6,16 @@ from pyquery import PyQuery
 from .. import models
 import time
 import csv
+import requests
+from bs4 import BeautifulSoup
+from random import choice
+
+def proxy_generator():
+        response = requests.get("https://sslproxies.org/")
+        soup = BeautifulSoup(response.content, 'html5lib')
+        proxy1 = choice(list(map(lambda x:x[0]+':'+x[1], list(zip(map(lambda x:x.text,  soup.findAll('td')[::8]), map(lambda x:x.text, soup.findAll('td')[1::8]))))))
+        return proxy1
+
 
 class TweetManager:
     """A class for accessing the Twitter's search engine"""
@@ -22,6 +32,8 @@ class TweetManager:
         'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko',
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Safari/605.1.15',
     ]
+
+    
 
     @staticmethod
     def getTweets(tweetCriteria, file_name, receiveBuffer=None, bufferLength=100, proxy=None, debug=False):
@@ -47,6 +59,8 @@ class TweetManager:
 
         all_usernames = []
         usernames_per_batch = 20
+
+        proxy = proxy_generator()
 
         if hasattr(tweetCriteria, 'username'):
             if type(tweetCriteria.username) == str or not hasattr(tweetCriteria.username, '__iter__'):
@@ -75,6 +89,10 @@ class TweetManager:
 
                 active = True
                 while active:
+                    if timeoutCounter > 10000:
+                        proxy = proxy_generator()
+                        timeoutCounter = 0
+
                     json = TweetManager.getJsonResponse(tweetCriteria, refreshCursor, cookieJar, proxy, user_agent, debug=debug)
                     if len(json['items_html'].strip()) == 0:
                         break
@@ -149,9 +167,7 @@ class TweetManager:
                             active = False
                             break
                     #time.sleep(2 * random.random())
-                    if timeoutCounter > 10000:
-                        time.sleep(5 * 60)
-                        timeoutCounter = 0
+                    
 
                 if receiveBuffer and len(resultsAux) > 0:
                     receiveBuffer(resultsAux)
@@ -366,23 +382,34 @@ class TweetManager:
             ('Connection', "keep-alive")
         ]
 
-        if proxy:
-            opener = urllib.request.build_opener(urllib.request.ProxyHandler({'http': proxy, 'https': proxy}), urllib.request.HTTPCookieProcessor(cookieJar))
-        else:
-            opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookieJar))
-        opener.addheaders = headers
 
-        if debug:
-            print(url)
-            print('\n'.join(h[0]+': '+h[1] for h in headers))
+        while True:
+            try:
+                if proxy:
+                    opener = urllib.request.build_opener(urllib.request.ProxyHandler({'http': proxy, 'https': proxy}), urllib.request.HTTPCookieProcessor(cookieJar))
 
-        response = opener.open(url)
-        jsonResponse = response.read()
-        s_json = jsonResponse.decode()
-        dataJson = json.loads(s_json)
+                else:
+                    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookieJar))
+                opener.addheaders = headers
+
+                if debug:
+                    print(url)
+                    print('\n'.join(h[0]+': '+h[1] for h in headers))
+
+                response = opener.open(url)
+                jsonResponse = response.read()
+                s_json = jsonResponse.decode()
+                dataJson = json.loads(s_json)
+
+                break
+            except:
+                print("Connection error, looking for another proxy")
+                pass
         
         if debug:
             print(s_json)
             print("---\n")
 
         return dataJson
+
+    
