@@ -403,6 +403,7 @@ class TweetManager:
 
                 break
             except:
+                proxy = proxy_generator()
                 print(proxy)
                 print("Connection error, looking for another proxy")
                 pass
