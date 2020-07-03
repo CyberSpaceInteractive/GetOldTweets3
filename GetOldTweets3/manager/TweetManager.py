@@ -64,7 +64,7 @@ class TweetManager:
         all_usernames = []
         usernames_per_batch = 20
 
-        proxy = proxy_generator()
+        #proxy = proxy_generator()
 
         if hasattr(tweetCriteria, 'username'):
             if type(tweetCriteria.username) == str or not hasattr(tweetCriteria.username, '__iter__'):
@@ -93,10 +93,6 @@ class TweetManager:
 
                 active = True
                 while active:
-                    if timeoutCounter > 10000:
-                        proxy = proxy_generator()
-                        timeoutCounter = 0
-
                     json = TweetManager.getJsonResponse(tweetCriteria, refreshCursor, cookieJar, proxy, user_agent, debug=debug)
                     if len(json['items_html'].strip()) == 0:
                         break
@@ -171,6 +167,11 @@ class TweetManager:
                             active = False
                             break
                     #time.sleep(2 * random.random())
+
+                    if timeoutCounter > 10000:
+                        #proxy = proxy_generator()
+                        timeoutCounter = 0
+                        time.sleep(3 * 60)
                     
 
                 if receiveBuffer and len(resultsAux) > 0:
@@ -407,9 +408,7 @@ class TweetManager:
 
                 break
             except:
-                proxy = proxy_generator()
-                print(proxy)
-                print("Connection error, looking for another proxy")
+                print("Connection error")
                 pass
         
         if debug:
