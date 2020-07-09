@@ -10,7 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 from random import choice
 
-proxy_list = ["176.221.43.250:3128", "174.138.46.114:3128", "167.172.133.225:3128", "64.227.1.89:3128", "51.158.29.47:5836"]
+proxy_list = ["186.0.231.138:999", "34.82.235.46:3128", "103.226.140.94:49259", "54.37.154.101:80", "89.175.188.58:56263"]
 
 def proxy_generator():
         response = requests.get("https://sslproxies.org/")
@@ -64,7 +64,7 @@ class TweetManager:
         all_usernames = []
         usernames_per_batch = 20
 
-        #proxy = proxy_generator()
+        proxy = proxy_generator()
 
         if hasattr(tweetCriteria, 'username'):
             if type(tweetCriteria.username) == str or not hasattr(tweetCriteria.username, '__iter__'):
@@ -169,9 +169,9 @@ class TweetManager:
                     #time.sleep(2 * random.random())
 
                     if timeoutCounter > 10000:
-                        #proxy = proxy_generator()
-                        timeoutCounter = 0
-                        time.sleep(4 * 60)
+                        proxy = proxy_generator()
+                        #timeoutCounter = 0
+                        #time.sleep(4 * 60)
                     
 
                 if receiveBuffer and len(resultsAux) > 0:
@@ -408,6 +408,7 @@ class TweetManager:
 
                 break
             except:
+                proxy = proxy_generator()
                 print("Connection error")
                 pass
         
