@@ -239,19 +239,26 @@ class TweetManager:
             html = match.group(3)
 
             attr = TweetManager.parse_attributes(img)
-            if emoji == "unicode":
-                chars = attr["alt"]
-                match = charre.match(chars)
-                while match:
-                    text += chr(int(match.group(1),16))
-                    chars = match.group(2)
-                    match = charre.match(chars)
-            elif emoji == "named":
-                text += "Emoji[" + attr['title'] + "]"
-            else:
-                text += " "
 
-            match = imgre.match(html)
+            try:
+                if emoji == "unicode":
+                    chars = attr["alt"]
+                    match = charre.match(chars)
+                    while match:
+                        text += chr(int(match.group(1),16))
+                        chars = match.group(2)
+                        match = charre.match(chars)
+                elif emoji == "named":
+                    text += "Emoji[" + attr['title'] + "]"
+                else:
+                    text += " "
+
+                match = imgre.match(html)
+            except KeyError:
+                text += " "
+                match = imgre.match(html)
+                pass
+
         text = text + html
 
         # Step 3, find links and replace them with the actual URL
