@@ -79,7 +79,7 @@ class TweetManager:
 
         
         with open(file_name, mode='w', newline="") as tweets_file:
-            tweets_writer = csv.writer(tweets_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            tweets_writer = csv.writer(tweets_file, delimiter=',')
 
 
             for batch in range(n_batches):  # process all_usernames by batches
