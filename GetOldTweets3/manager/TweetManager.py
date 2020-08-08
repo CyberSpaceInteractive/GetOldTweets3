@@ -78,7 +78,7 @@ class TweetManager:
             n_batches = 1
 
         
-        with open(file_name, mode='w', newline="") as tweets_file:
+        with open(file_name, mode='w', newline="", encoding='utf-8') as tweets_file:
             tweets_writer = csv.writer(tweets_file, delimiter=',')
 
 
@@ -155,7 +155,7 @@ class TweetManager:
                         resultsAux.append(tweet)
 
                         tweet_list = []
-                        tweet_list = [tweet.id, tweet.permalink, tweet.username, tweet.to, tweet.text.encode("utf-8"), tweet.date, tweet.retweets, tweet.favorites, tweet.mentions, tweet.hashtags, tweet.geo]
+                        tweet_list = [tweet.id, tweet.permalink, tweet.username, tweet.to, tweet.text, tweet.date, tweet.retweets, tweet.favorites, tweet.mentions, tweet.hashtags, tweet.geo]
                         tweets_writer.writerow(tweet_list)
                         
                         if receiveBuffer and len(resultsAux) >= bufferLength:
