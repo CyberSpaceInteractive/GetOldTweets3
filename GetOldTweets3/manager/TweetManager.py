@@ -171,7 +171,7 @@ class TweetManager:
                     if timeoutCounter > 10000:
                         #proxy = proxy_generator()
                         timeoutCounter = 0
-                        time.sleep(4 * 60)
+                        time.sleep(3 * 60)
                     
 
                 if receiveBuffer and len(resultsAux) > 0:
