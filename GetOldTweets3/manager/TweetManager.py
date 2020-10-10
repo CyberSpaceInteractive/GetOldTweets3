@@ -382,6 +382,7 @@ class TweetManager:
         else:
             urlLang = ''
         url = url % (urllib.parse.quote(urlGetData.strip()), urlLang, urllib.parse.quote(refreshCursor))
+        print(url)
         useragent = useragent or TweetManager.user_agents[0]
 
         headers = [
