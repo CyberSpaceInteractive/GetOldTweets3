@@ -362,11 +362,11 @@ class TweetManager:
             elif hasattr(tweetCriteria, 'lat') and hasattr(tweetCriteria, 'lon'):
                 urlGetData += ' geocode:%f,%f,%s' % (tweetCriteria.lat, tweetCriteria.lon, tweetCriteria.within)
 
-        if hasattr(tweetCriteria, 'since'):
-            urlGetData += ' since:' + tweetCriteria.since
-
         if hasattr(tweetCriteria, 'until'):
             urlGetData += ' until:' + tweetCriteria.until
+
+        if hasattr(tweetCriteria, 'since'):
+            urlGetData += ' since:' + tweetCriteria.since
 
         if hasattr(tweetCriteria, 'minReplies'):
             urlGetData += ' min_replies:' + tweetCriteria.minReplies
