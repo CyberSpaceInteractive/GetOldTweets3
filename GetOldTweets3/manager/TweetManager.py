@@ -415,12 +415,11 @@ class TweetManager:
                 dataJson = json.loads(s_json)
 
                 break
-            except:
+            except Exception as e:
+                print(str(e))
                 #proxy = proxy_generator()
                 print("Connection error")
-                e = sys.exc_info()[0]
-                print(e.reason)
-                print(e.headers)
+                
                 pass
         
         if debug:
