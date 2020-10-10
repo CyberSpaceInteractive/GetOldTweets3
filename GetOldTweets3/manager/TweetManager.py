@@ -408,10 +408,25 @@ class TweetManager:
                     print(url)
                     print('\n'.join(h[0]+': '+h[1] for h in headers))
 
-                response = opener.open(url)
-                jsonResponse = response.read()
-                s_json = jsonResponse.decode()
-                dataJson = json.loads(s_json)
+                try:
+                    response = opener.open(url)
+                except:
+                    print("response error1")
+
+                try:
+                    jsonResponse = response.read()
+                except:
+                    print("response error2")
+
+                try:
+                    s_json = jsonResponse.decode()
+                except:
+                    print("response error3")
+
+                try:
+                    dataJson = json.loads(s_json)
+                except:
+                    print("response error4")
 
                 break
             except:
