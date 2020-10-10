@@ -420,7 +420,7 @@ class TweetManager:
                 print("Connection error")
                 e = sys.exc_info()[0]
                 print(e.reason)
-                print(e.code)
+                print(e.headers)
                 pass
         
         if debug:
