@@ -418,6 +418,8 @@ class TweetManager:
             except:
                 #proxy = proxy_generator()
                 print("Connection error")
+                e = sys.exc_info()[0]
+                print(e)
                 pass
         
         if debug:
