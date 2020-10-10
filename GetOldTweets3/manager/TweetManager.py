@@ -418,7 +418,7 @@ class TweetManager:
                 break
             except Exception as e:
                 print(str(e))
-                print("Try to open in browser: https://twitter.com/search?q=%s&src=typd" % urllib.parse.quote(urlGetData))
+                print("Try to open in browser: https://twitter.com/search?q=%s&src=typed_query" % urllib.parse.quote(urlGetData))
                 #proxy = proxy_generator()
                 print("Connection error")
                 
